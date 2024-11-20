@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat em Tempo Real</title>
+</head>
+<body>
+    <div id="user-section">
+        <form id="user-form">
+            <input id="username" autocomplete="off" placeholder="Digite seu nome de usuário..." />
+            <button>Entrar</button>
+        </form>
+    </div>
+
+    <div id="chat-section" style="display: none;">
+        <ul id="messages"></ul>
+        <form id="form" action="">
+            <input id="input" autocomplete="off" />
+            <button>Enviar</button>
+        </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js"></script>
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+        let username = '';
+
+        document.getElementById('user-form').onsubmit = function() {
+            username = document.getElementById('username').value.trim();
+            if (username) {
+                document.getElementById('user-section').style.display = 'none';
+                document.getElementById('chat-section').style.display = 'block';
+            }
+            return false;
+        };
+
+        document.getElementById('form').onsubmit = function() {
+            const message = document.getElementById('input').value;
+            if (message && username) {
+                const data = {
+                    user: username,
+                    text: message
+                };
+                socket.emit('message', JSON.stringify(data)); // Envia a mensagem como JSON
+                document.getElementById('input').value = '';
+            }
+            return false;
+        };
+
+        socket.on('message', function(msg) {
+            console.log(msg);
+            var ul = document.getElementById('messages');
+            var li = document.createElement('li');
+            li.appendChild(document.createTextNode(msg.user + ': ' + msg.text));
+            ul.appendChild(li);
+        });
+    </script>
+</body>
+</html>
